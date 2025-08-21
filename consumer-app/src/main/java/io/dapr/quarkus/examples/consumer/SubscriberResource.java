@@ -18,7 +18,7 @@ public class SubscriberResource {
 
     @POST
     @Path("/subscribe")
-    @Topic(pubsubName = "topic", name = "topic")
+    @Topic(pubsubName = "pubsub", name = "topic")
     public void subscribe(CloudEvent<Order> cloudEvent) {
         Log.info("Order Event Received: " + cloudEvent.getData());
         events.add(cloudEvent);

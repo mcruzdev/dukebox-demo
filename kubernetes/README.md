@@ -43,7 +43,7 @@ For this we will use Quarkus Container Image Buildpack extension, it functions t
 From inside the `producer-app` directory you can run the following command to create a container:
 
 ```bash
-mvn quarkus:build
+mvn clean package
 ```
 
 Once we have the container image created, we need to tag and push to the local registry, so the image can be used from our local cluster.
@@ -63,7 +63,7 @@ podman push localhost:5001/sb-producer-app --tls-verify=false
 From inside the `consumer-app` directory you can run the following command to create a container:
 
 ```bash
-mvn quarkus:build
+mvn clean package
 ```
 
 Once we have the container image created, we need to tag and push to the local registry, so the image can be used from our local cluster.
