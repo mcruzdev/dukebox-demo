@@ -106,6 +106,12 @@ the `spring-boot-examples/kubernetes/` directory:
 kubectl apply -f .
 ```
 
+Then Zipkin:
+
+```bash
+kubectl create deployment zipkin --image openzipkin/zipkin
+```
+
 Next you need to use `kubectl port-forward` to be able to send requests to the applications.
 
 ```bash
@@ -135,3 +141,12 @@ and
 ```bash
 kubectl logs -f consumer-app-<POD_ID>
 ```
+
+
+Viewing tracing:
+
+```shell
+kubectl port-forward svc/zipkin 9411:9411
+```
+
+Access your browser at http://localhost:9411.
