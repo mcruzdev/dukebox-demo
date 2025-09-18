@@ -1,10 +1,7 @@
 package io.dapr.quarkus.examples.producer;
 
 import io.dapr.client.DaprClient;
-import io.dapr.client.domain.ExecuteStateTransactionRequest;
 import io.dapr.client.domain.State;
-import io.dapr.client.domain.TransactionalStateOperation;
-import io.dapr.client.domain.TransactionalStateOperation.OperationType;
 import io.quarkus.logging.Log;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -16,8 +13,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Path("/orders")
@@ -29,8 +24,6 @@ public class OrderResource {
         this.daprClient = daprClient;
     }
 
-    // add a retry using jobs...
-
     /**
      * Store orders from customers.
      *
@@ -41,81 +34,11 @@ public class OrderResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public String storeOrder(Order order) {
-
-
-        // save both using an tx
-
-        // after i will send a message to message broker
-
-        // finally
-        // delete the outbox line from my database
- 
-
         Log.info("Storing Order: " + order);
-        this.daprClient.saveState("kvstore", order.getId(), order).block();
+        this.daprClient.saveState("postgres", order.getId(), order).block();
         Log.info("Publishing Order Event: " + order);
         this.daprClient.publishEvent("pubsub", "topic", order).block();
         return "Order Stored and Event Published";
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @POST
-    @Path("/outbox")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public String outboxStoreOrder(Order order) {
-
-        Log.info("Storing Order: " + order);
-
-        ExecuteStateTransactionRequest executeStateTransactionRequest = new ExecuteStateTransactionRequest(
-                "postgresql-outbox");
-
-        List<TransactionalStateOperation<?>> ops = new ArrayList<>();
-
-        State<Order> state = new State<>(order.getId(), order, null);
-
-        TransactionalStateOperation<Order> upsertOps = new TransactionalStateOperation<>(OperationType.UPSERT, state);
-
-        ops.add(upsertOps);
-
-        executeStateTransactionRequest.setOperations(ops);
-
-        this.daprClient.executeStateTransaction(executeStateTransactionRequest).block();
-
-        return "Order Stored and Event Published (via Outbox Pattern)";
     }
 
     @GET
@@ -124,7 +47,7 @@ public class OrderResource {
     public Response findById(@PathParam("orderId") String orderId, @QueryParam("storeName") String storeName) {
 
         Log.info("Finding Order by ID: " + orderId);
-        
+
         State<Order> orderState = this.daprClient.getState(storeName, orderId, Order.class)
                 .block();
 
