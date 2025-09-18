@@ -23,13 +23,13 @@ import java.util.Objects;
 @Path("/orders")
 public class OrderResource {
 
-    static String POSTGRESQL_STATESTORE = "kvstore";
-    static String POSTGRESQL_OUTBOX_STATESTORE = "postgresql-outbox";
     final DaprClient daprClient;
 
     public OrderResource(DaprClient daprClient) {
         this.daprClient = daprClient;
     }
+
+    // add a retry using jobs...
 
     /**
      * Store orders from customers.
@@ -41,12 +41,56 @@ public class OrderResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public String storeOrder(Order order) {
+
+
+        // save both using an tx
+
+        // after i will send a message to message broker
+
+        // finally
+        // delete the outbox line from my database
+ 
+
         Log.info("Storing Order: " + order);
-        this.daprClient.saveState(POSTGRESQL_STATESTORE, order.getId(), order).block();
+        this.daprClient.saveState("kvstore", order.getId(), order).block();
         Log.info("Publishing Order Event: " + order);
         this.daprClient.publishEvent("pubsub", "topic", order).block();
         return "Order Stored and Event Published";
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @POST
     @Path("/outbox")
@@ -57,7 +101,7 @@ public class OrderResource {
         Log.info("Storing Order: " + order);
 
         ExecuteStateTransactionRequest executeStateTransactionRequest = new ExecuteStateTransactionRequest(
-                POSTGRESQL_OUTBOX_STATESTORE);
+                "postgresql-outbox");
 
         List<TransactionalStateOperation<?>> ops = new ArrayList<>();
 
